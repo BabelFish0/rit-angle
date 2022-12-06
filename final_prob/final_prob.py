@@ -45,5 +45,5 @@ for i in range(len(primes)-1):
         a_primes.append(primes[i])
 
 for i in range(len(primes)-1):
-    if is_am(primes[i]) == primes[i+1]:
+    if (is_am(primes[i]) == primes[i+1]) and primes[i] not in a_primes:
         print(primes[i])
