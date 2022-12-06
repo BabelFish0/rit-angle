@@ -12,4 +12,5 @@ def find_abc(n):
                     out.append([a, b, c])
     return out
 
-
+print(len(find_abc(734)))
+print(math.factorial(60))
