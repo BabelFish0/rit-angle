@@ -1,6 +1,9 @@
 nums = [1, 2, 3, 4, 5, 6]
 import math
 
+import itertools
+#print(list(itertools.permutations([1, 2, 3])))
+
 def check(list):
     a = list[0]
     b = list[1]
@@ -9,17 +12,11 @@ def check(list):
     e = list[4]
     f = list[5]
 
-    if round(((b/(c+1))*((2**(c+1))-(a**(c+1))) + e*(4-a**2), 4) == round((144*d)/f), 4): #and ((144*d) % f !=0):
+    if (f*b)*((2**(c+1))-(a**(c+1))) + f*(c+1)*(40+2*e-((20*a**2+e*a**2)/2)) == ((c+1)*144*d):
+    #if (b/(c+1))*((2**(c+1))-(a**(c+1))) + e*(4-a**2) == (144*d)/f:
+        #if (f != 1 and ((144*d) % f == 0)) or f == 1:
         print(list)
 
-def perm(a, k=0):
-   if k == len(a):
-        check(a)
-        #print(a)
-   else:
-        for i in range(k, len(a)):
-            a[k], a[i] = a[i] ,a[k]
-            perm(a, k+1)
-            a[k], a[i] = a[i], a[k]
+for set in (list(itertools.permutations(nums))):
+    check(set)
 
-perm(nums)
