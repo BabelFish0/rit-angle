@@ -1,7 +1,8 @@
 import math
-import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.patches as pat
 
-alpha = math.atan(-3/4)
+alpha = math.atan(3/4)
 
 def test_integer(a, b, c, n):
     return a**2 + b**2 + c**2 == n
@@ -55,5 +56,20 @@ for mountain1 in mountains:
     for mountain2 in mountains:
         if is_below(mountain1, mountain2, alpha) and mountain1 != mountain2:
             mountain1.invalid_dest.append(mountain2)
-for i in range(len(mountains)):
-    print(mountains[i].invalid_dest)
+#for i in range(len(mountains)):
+    #print(mountains[i].invalid_dest)
+
+x = []
+y = []
+r = []
+for mountain in mountains:
+    x.append(mountain.a)
+    y.append(mountain.b)
+    r.append(mountain.radius)
+
+fig, ax = plt.subplots()
+plot = plt.plot(x, y, 'bx')
+cc = []
+for i in range(len(r)):
+    cc.append(plt.Circle((x[i], y[i]), r[i]))
+plt.show()
