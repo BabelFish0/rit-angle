@@ -85,7 +85,7 @@ def time(mountain1, mountain2):
 
 def find_closest_coast(m):
     '''Return closest int valid coastal point to mountain m.'''
-    
+    # reminder: solve for point of coastal intersection. check lowest distance with all valid integer points in square around point in question.
 
 # def create_data_model():
 #     """Stores the data for the problem."""
