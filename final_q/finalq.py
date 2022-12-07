@@ -57,7 +57,7 @@ for mountain1 in mountains:
         if is_below(mountain1, mountain2, alpha) and mountain1 != mountain2:
             mountain1.invalid_dest.append(mountain2)
 #for i in range(len(mountains)):
-    #print(mountains[i].invalid_dest)
+ #   print(mountains[i].invalid_dest)
 
 x = []
 y = []
@@ -73,3 +73,5 @@ cc = []
 for i in range(len(r)):
     cc.append(plt.Circle((x[i], y[i]), r[i]))
 plt.show()
+
+print(x, y, r)
