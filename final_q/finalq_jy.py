@@ -3,6 +3,15 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as pat
 
 alpha = math.atan(3/4)
+global infin
+global u_up
+global u_flat
+global u_down
+infin = 10000000000000
+u_up = 1
+u_flat = 2
+u_down = 4
+coast = []
 
 def test_integer(a, b, c, n):
     return a**2 + b**2 + c**2 == n
@@ -55,3 +64,30 @@ for mountain1 in mountains:
             mountain1.invalid_dest.append(mountain2)
 print(mountains[5].invalid_dest)
 
+
+# --- Google OR-Tools TSP solver ---
+from ortools.constraint_solver import routing_enums_pb2
+from ortools.constraint_solver import pywrapcp
+
+def dist(m1, m2):
+    return math.sqrt((m1.a-m2.a)**2 + (m1.b-m2.b)**2)
+
+def time(mountain1, mountain2):
+    '''Return time in s FROM mountain1 TO mountain2.'''
+    if mountain2 in mountain1.invalid_dest:
+        return infin
+    d = dist(mountain1, mountain2)
+    if d > mountain1.radius + mountain2.radius:
+        return mountain1.radius / u_down + (d - mountain1.radius - mountain2.radius) / u_flat + mountain2.radius / u_up
+    d1 = mountain1.radius * ((mountain2.radius**2-mountain1.radius**2-d**2)/(-2*mountain2.radius*d))
+    d2 = mountain2.radius * ((mountain1.radius**2-mountain2.radius**2-d**2)/(-2*mountain1.radius*d))
+    return d1 / u_down + d2 / u_up
+
+def find_closest_coast(m):
+    '''Return closest int valid coastal point to mountain m.'''
+    
+
+# def create_data_model():
+#     """Stores the data for the problem."""
+#     data = {}
+#     data['distance_matrix'] = [
