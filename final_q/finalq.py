@@ -1,6 +1,7 @@
 import math
+import matplotlib
 
-alpha = 30
+alpha = math.atan(-3/4)
 
 def test_integer(a, b, c, n):
     return a**2 + b**2 + c**2 == n
@@ -19,14 +20,14 @@ def find_abc(n):
 
 class Mountain:
     def __init__(self, a, b, c):
-        radius = (0.1875*c)/math.tan(alpha)
+        self.radius = (0.1875*c)/math.tan(alpha)
         self.a = a
         self.b = b
-        h = 0.1875 * c
-        invalid_dest = []
+        self.h = 0.1875 * c
+        self.invalid_dest = []
 
 def is_below(mountain1, mountain2, alpha):
-    dist = math.sqrt((math.abs(mountain1.a-mountain2.a))**2 + (math.abs(mountain1.b-mountain2.b)))
+    dist = math.sqrt((abs(mountain1.a-mountain2.a))**2 + (abs(mountain1.b-mountain2.b))**2)
     if mountain2.h > mountain1.h:
         r1 = mountain2.radius
         minor_r = r1 - dist
@@ -47,5 +48,12 @@ def is_below(mountain1, mountain2, alpha):
 mountains = []   
 for mountain_data in find_abc(734):
     mountains.append(Mountain(mountain_data[0], mountain_data[1], mountain_data[2]))
-print(mountains)
-print(mountains[5].a)
+#print(mountains)
+#print(mountains[5].a)
+
+for mountain1 in mountains:
+    for mountain2 in mountains:
+        if is_below(mountain1, mountain2, alpha) and mountain1 != mountain2:
+            mountain1.invalid_dest.append(mountain2)
+for i in range(len(mountains)):
+    print(mountains[i].invalid_dest)
