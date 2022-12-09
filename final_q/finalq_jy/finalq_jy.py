@@ -13,9 +13,9 @@ global u_flat
 global u_down
 global island_r
 infin = 100000
-u_up = 1
-u_flat = 2
-u_down = 4
+u_up = 0.001 #km/s
+u_flat = 0.002
+u_down = 0.004
 island_r = 28
 coast = []
 
@@ -159,14 +159,14 @@ def distance_callback(from_index, to_index):
 transit_callback_index = routing.RegisterTransitCallback(distance_callback)
 routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
 search_parameters = pywrapcp.DefaultRoutingSearchParameters()
-search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
+search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.GLOBAL_CHEAPEST_ARC)
 search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
-search_parameters.time_limit.seconds = 60
-# search_parameters.log_search = True
+search_parameters.time_limit.seconds = 60*5
+#search_parameters.log_search = True
 
 def print_solution(manager, routing, solution):
     """Prints solution on console."""
-    print('Objective: {} seconds'.format(solution.ObjectiveValue()))
+    print('Objective: {} seconds'.format(solution.ObjectiveValue()/matrix_scaling))
     index = routing.Start(0)
     plan_output = 'Route for runner:\n'
     route_distance = 0
@@ -204,7 +204,7 @@ for i, route in enumerate(routes):
         if j == 0:
             route_points.append(find_closest_coast(mountains[route[1]-1].a, mountains[route[1]-1].b))
         elif j == 61:
-            route_points.append(find_closest_coast(mountains[route[59]-1].a, mountains[route[59]-1].b))
+            route_points.append(find_closest_coast(mountains[route[-2]-1].a, mountains[route[-2]-1].b))
         else:
             route_points.append((mountains[m-1].a, mountains[m-1].b))
     print('Route', i, route)
