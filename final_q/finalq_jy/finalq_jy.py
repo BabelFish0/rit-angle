@@ -160,8 +160,8 @@ transit_callback_index = routing.RegisterTransitCallback(distance_callback)
 routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
 search_parameters = pywrapcp.DefaultRoutingSearchParameters()
 search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.GLOBAL_CHEAPEST_ARC)
-search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
-search_parameters.time_limit.seconds = 60*5
+search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.SIMULATED_ANNEALING)
+search_parameters.time_limit.seconds = 60*60*2
 #search_parameters.log_search = True
 
 def print_solution(manager, routing, solution):
