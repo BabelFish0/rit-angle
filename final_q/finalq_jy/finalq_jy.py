@@ -209,3 +209,10 @@ for i, route in enumerate(routes):
             route_points.append((mountains[m-1].a, mountains[m-1].b))
     print('Route', i, route)
     print(len(route_points), ' route points: ', route_points)
+
+# Final print formatting for q submission.
+def print_final_solution(time=0.0, points=[]):
+    print(round(time, 2))
+    for point in points:
+        print(str(point).strip('() '))
+print_final_solution(solution.ObjectiveValue()/matrix_scaling, route_points) #confirm all solution printing is concordant
