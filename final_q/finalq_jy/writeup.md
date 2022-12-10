@@ -2,7 +2,53 @@
 
 ### Jude Young
 
-This document provides an overview to our approach for solving the final Ritangle 2022 question. The solution was programmed in Python. First, a brute force function for the generation of the mountains:
+This document provides an overview to our approach for solving the final Ritangle 2022 question. The solution was programmed in Python.
+
+### Problem
+
+Welcome to the fantasy island of Volcania!
+
+Volcania is roughly the north-east quadrant of a circle. Its national grid, measured in kilometres, has $x=0$ along its western edge and $y=0$ on its southern edge. These two shorelines are mostly high cliffs. The NE shoreline is roughly circular. The sea reaches every whole-kilometre grid point that is 28 km or more from the SW corner, and no grid points that are closer than 28 km to the corner.
+
+Volcania takes its name from its magical conical mountains. The mountains have their summits on the kilometre grid points $(a,b)$ and have height $0.1875c$ km above sea level, where $a, b$ and $c$ are each of the possible sets of positive integers that satisfy $a^2+b^2+c^2=734$. Each mountain is steep, with a constant gradient; lava always has the same viscosity and thermal properties, so all slopes make an equal angle $\alpha$ with the horizontal.
+
+There is a flat coastal plain, at zero altitude, between the NE shoreline and the mountains.
+
+Sabrina is a runner who wishes to visit each of the summits in the shortest possible time (no peak can be visited twice). She arrives by boat and lands at one of the grid points on the NE shore. She then visits each summit in turn before returning to a grid point on the NE shore (possibly the starting point but not necessarily). The magic of the island means that once she has picked her next destination, the other mountains (apart from one she is standing on, if any) all dematerialise. Her route will generally be directly down until she meets the slope up to the next target mountain, then directly up that mountain to its summit, where she chooses her next target. Nowhere on the island is below sea level; if Sabrina reaches flat ground at any point, she runs straight across it heading for her next chosen mountain.
+
+If Sabrina chooses a ‘next mountain’ that is so high and so close to her that she is below ground level when it materialises, she will be buried alive. She would like to avoid this fate. Similarly, she cannot choose as her next target a mountain for which the summit is below the surface of her current mountain.
+
+Sabrina’s speed across the map (i.e. the horizontal component of her speed over the ground surface) is $u=2(\tan\beta(1+\cos2\theta)+\sin2\theta)ms^{-1}$.
+
+The angle $\theta$ is in Sabrina’s control (it depends on her running style). She picks different values for $\theta$ for running uphill, downhill and on the flat, so as to maximise her speed across the map at every stage. 
+
+The angle $\beta$ is the angle to the horizontal at which she is running (so this is either $0, \alpha$ or $-\alpha$).
+
+It transpires that Sabrina’s downhill speed (constant) is exactly four times her uphill speed (also constant).
+
+Your task is to advise Sabrina at which grid point on the shoreline she should start, which order to tackle the mountains, and at which grid point she should finish. To support your advice you will need to calculate the total time taken for your best route in seconds.
+
+Submit your answer in comma-separated format as follows:
+
+Time taken to complete the route (in seconds, to 2 decimal places)
+
+$(x, y)$ coordinates of start point (whole kilometres)
+
+$(x, y)$ coordinates of each mountain visited (whole kilometres, in the order that Sabrina runs them)
+
+$(x, y)$ coordinates of finish point (whole kilometres)
+
+For example:\
+123456.78\
+28,0\
+1,2\
+2,3\
+…\
+0,28
+
+### Solution
+
+First, a brute force function for the generation of the mountains:
 ```py
 def test_integer(a, b, c, n):
     return a**2 + b**2 + c**2 == n
@@ -120,3 +166,97 @@ def time_coast(m, towards_coast=True):
 ```
 If `towards_coast` is `True`, the downwards speed is used, as the journey consists of going down the mountain and across the flat plain; if `towards_coast` is `False`, the upwards speed is used.
 
+These functions are used to create the matrix `time_matrix` in which the (`i`, `j`) entry represents the time from mountain (`i-1`) to mountain (`j-1`). The shape of the matrix is (61, 61) because row 0 and column 0 represent the shortest time from the coast to each mountain and the time to the coast from each mountain respectively. Therefore, the index of a given mountain in `mountains` is one less than its index in `time_matrix`. It should also be noted that the solver only takes integer times, so a `matrix_scaling` factor of 1000 is applied to the timing matrix.
+```py
+# --- create time data ---
+matrix_scaling = 1000
+time_matrix = np.zeros((61, 61), dtype=int)
+for i in range(1, np.shape(time_matrix)[0]): #mountain i-1 to mountain j-1
+    for j in range(1, np.shape(time_matrix)[1]):
+        time_matrix[i][j] = int(matrix_scaling * time(mountains[i-1], mountains[j-1]))
+
+for j in range(1, np.shape(time_matrix)[0]): #coast to mountain j-1
+    time_matrix[0][j] = int(matrix_scaling * time_coast(mountains[j-1], False))
+
+for i in range(1, np.shape(time_matrix)[0]): #mountain i-1 to coast
+    time_matrix[i][0] = int(matrix_scaling * time_coast(mountains[i-1], True))
+np.set_printoptions(threshold=np.inf)
+#print(time_matrix)
+```
+The data is stored in the dict `data` and is used by the solver along with the number of 'vehicles' (runners) and start/end point (0 refers to the row and column of `time_matrix` that represents the times to/from the coast).
+```py
+# --- Google OR-Tools TSP solver ---
+from ortools.constraint_solver import routing_enums_pb2
+from ortools.constraint_solver import pywrapcp
+
+# --- store data for problem ---
+data = {}
+data['num_vehicles'] = 1
+data['depot'] = 0
+data['distance_matrix'] = time_matrix
+
+manager = pywrapcp.RoutingIndexManager(len(data['distance_matrix']), data['num_vehicles'], data['depot'])
+routing = pywrapcp.RoutingModel(manager)
+
+def distance_callback(from_index, to_index):
+    """Returns the distance between the two nodes."""
+    # Convert from routing variable Index to distance matrix NodeIndex.
+    from_node = manager.IndexToNode(from_index)
+    to_node = manager.IndexToNode(to_index)
+    return data['distance_matrix'][from_node][to_node]
+```
+The `distance_callback` feeds the solver the 'distances' (times) from `time_matrix` to use as the weights between nodes. The parameters of the solver are set as follows:
+```py
+transit_callback_index = routing.RegisterTransitCallback(distance_callback)
+routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
+search_parameters = pywrapcp.DefaultRoutingSearchParameters()
+search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.GLOBAL_CHEAPEST_ARC)
+search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
+search_parameters.time_limit.seconds = 60*5
+#search_parameters.log_search = True
+```
+Multiple algorithms can be used. For example, the metaheuristic can be set to `SIMULATED_ANNEALING` but the current best results were with `GUIDED_LOCAL_SEARCH`. The `distance_callback` function is used to set the costs between nodes. Finally, the solution can be printed:
+```py
+def get_routes(solution, routing, manager):
+  """Get vehicle routes from a solution and store them in an array."""
+  # Get vehicle routes and store them in a two dimensional array whose
+  # i,j entry is the jth location visited by vehicle i along its route.
+  routes = []
+  for route_nbr in range(routing.vehicles()):
+    index = routing.Start(route_nbr)
+    route = [manager.IndexToNode(index)]
+    while not routing.IsEnd(index):
+      index = solution.Value(routing.NextVar(index))
+      route.append(manager.IndexToNode(index))
+    routes.append(route)
+  return routes
+
+solution = routing.SolveWithParameters(search_parameters)
+if solution:
+    print_solution(manager, routing, solution)
+routes = get_routes(solution, routing, manager)
+# Display the routes.
+route_points = []
+for i, route in enumerate(routes):
+    for j, m in enumerate(route):
+        if j == 0:
+            route_points.append(find_closest_coast(mountains[route[1]-1].a, mountains[route[1]-1].b))
+        elif j == 61:
+            route_points.append(find_closest_coast(mountains[route[-2]-1].a, mountains[route[-2]-1].b))
+        else:
+            route_points.append((mountains[m-1].a, mountains[m-1].b))
+    print('Route', i, route)
+    print(len(route_points), ' route points: ', route_points)
+
+# Final print formatting for q submission.
+def print_final_solution(time=0.0, points=[]):
+    print(round(time, 2))
+    for point in points:
+        print(str(point).strip('() '))
+print_final_solution(solution.ObjectiveValue()/matrix_scaling, route_points) #confirm all solution printing is concordant
+```
+The function `get_routes` returns a list in the form `[0, 4, ... , 0]`. The route is then printed in coordinate form, which involves finding the coastal points for the mountains in position 1 and 60. This is printed as a list in the form `[(1, 28), (1, 27), ...]` which is easy to test (e.g. using the points to check the time is correct). However, the question demands the answer in a specific format. This is what `print_final_solution` provides.
+
+The current best route, with a time of 93939.26s is shown below, ploted on [this Desmos graph](https://www.desmos.com/calculator/c4qiuqlpgy). The start point is (1, 28) and the end point is (15, 24). The circles show the bases of the mountains.
+
+![best route](ritangle3_bestroute.png "Best Route")
