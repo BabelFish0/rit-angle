@@ -257,6 +257,6 @@ print_final_solution(solution.ObjectiveValue()/matrix_scaling, route_points) #co
 ```
 The function `get_routes` returns a list in the form `[0, 4, ... , 0]`. The route is then printed in coordinate form, which involves finding the coastal points for the mountains in position 1 and 60. This is printed as a list in the form `[(1, 28), (1, 27), ...]` which is easy to test (e.g. using the points to check the time is correct). However, the question demands the answer in a specific format. This is what `print_final_solution` provides.
 
-The current best route, with a time of 93939.26s is shown below, ploted on [this Desmos graph](https://www.desmos.com/calculator/c4qiuqlpgy). The start point is (1, 28) and the end point is (15, 24). The circles show the bases of the mountains.
+The current best route, with a time of 93939.26s is shown below, plotted on [this Desmos graph](https://www.desmos.com/calculator/c4qiuqlpgy). The start point is (1, 28) and the end point is (15, 24). The circles show the bases of the mountains.
 
 ![best route](ritangle3_bestroute.png "Best Route")
