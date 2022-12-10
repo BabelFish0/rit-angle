@@ -259,4 +259,4 @@ The function `get_routes` returns a list in the form `[0, 6, ... , 0]`. The rout
 
 The current best route, with a time of 93939.26s is shown below, plotted on [this Desmos graph](https://www.desmos.com/calculator/c4qiuqlpgy). The start point is (1, 28) and the end point is (15, 24). The circles show the bases of the mountains.
 
-![best route](ritangle3_bestroute.png)
+![best route](/final_q/finalq_jy/ritangle3_bestroute.png)
