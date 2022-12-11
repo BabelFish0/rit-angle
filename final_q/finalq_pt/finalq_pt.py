@@ -79,7 +79,7 @@ order, duration = solve_tsp_local_search(distance_matrix)
 # complete path of 60 moutains end at the starting point
 # if starts at order[i], ends at order[i - 1]
 
-def distance_from_shore(x, y, r, start):
+def time_from_shore(x, y, r, start):
     lst = []
     for i in range(0, 28):
         lst.append([i, math.ceil((28**2 - i**2)**0.5)])
@@ -110,7 +110,7 @@ for k in range(60):
             duration_from_end_to_start = i.time
             break;
     
-    duration_difference.append(duration_from_end_to_start - distance_from_shore(start.x, start.y, start.radius, True) - distance_from_shore(end.x, end.y, end.radius, False))
+    duration_difference.append(duration_from_end_to_start - time_from_shore(start.x, start.y, start.radius, True) - time_from_shore(end.x, end.y, end.radius, False))
 
     
 print(order)
