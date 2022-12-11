@@ -48,59 +48,72 @@ for pairs in permutations(circles_lst, 2):  # P as time for A to B is not the sa
 # 568 pairs have 2 intersections
 
 for pairs in circles_pairs_lst:
+    A = circles_lst[pairs.circle1]
+    B = circles_lst[pairs.circle2]
     if pairs.state == "no intersections":
-        # height, radius, slope is a 3,4,5 right triangle
         # A slope * 1000/4 + flat distance * 1000/2 + B slope * 1000/1 s
-        A = circles_lst[pairs.circle1]
-        B = circles_lst[pairs.circle2]
-        pairs.time = (A.radius * 5 / 4 * 1000 / 4) + ((((A.x - B.x)**2 + (A.y - B.y)**2) ** 0.5) - A.radius - B.radius)/2 + (B.radius * 5 / 4 * 1000)
+        d = ((A.x - B.x) ** 2 + (A.y - B.y) ** 2) ** 0.5
+        pairs.time = (A.radius * 1000 / 4) + (d - A.radius - B.radius) * 1000 / 2 + (B.radius * 1000)
     elif pairs.state == "2 intersections":
-        # top of A slope -> (distance + r0 - r1)/2 * 5 / 4
-        # top of B slope -> (distance + r1 - r0)/2 * 5 / 4
-        A = circles_lst[pairs.circle1]
-        B = circles_lst[pairs.circle2]
-        d = ((A.x - B.x)**2 + (A.y - B.y)**2)**0.5
-        pairs.time = ((d + A.radius - B.radius) / 2 * 5 / 4 * 1000 / 4) + ((d + B.radius - A.radius) / 2 * 5 / 4 * 1000)
+        # top of A horizontal -> (distance + r0 - r1)/2 
+        # top of B horizontal -> (distance + r1 - r0)/2 
+        d = ((A.x - B.x) ** 2 + (A.y - B.y) ** 2) ** 0.5
+        pairs.time = ((d + A.radius - B.radius) / 2 * 1000 / 4) + ((d + B.radius - A.radius) / 2 * 1000)
 
 graph = []
 for i in range(60):
     lst = []
-    for j in range(60):
-        if i == j:
-            lst.append(0)
-        else:
-            for k in circles_pairs_lst:
-                if k.circle1 == i and k.circle2 == j:
-                    lst.append(k.time)
+    for moutain in circles_pairs_lst:
+        if moutain.circle1 == i:
+            lst.append(moutain.time)
     graph.append(lst)
+for i in range(60):
+    graph[i].insert(i, 0)
+    
 
-def travellingSalesmanProblem(graph, s):
-    # store all vertex apart from source vertex
-    vertex = []
-    for i in range(60):
-        if i != s:
-            vertex.append(i)
+import numpy as np
+from python_tsp.heuristics import solve_tsp_local_search
 
-    # store minimum weight Hamiltonian Cycle
-    min_path = maxsize
-    next_permutation = permutations(vertex)
-    for i in next_permutation:
+distance_matrix = np.array(graph)
+order, duration = solve_tsp_local_search(distance_matrix)
+# complete path of 60 moutains end at the starting point
+# if starts at order[i], ends at order[i - 1]
 
-        # store current Path weight(cost)
-        current_pathweight = 0
+def distance_from_shore(x, y, r, start):
+    lst = []
+    for i in range(0, 28):
+        lst.append([i, math.ceil((28**2 - i**2)**0.5)])
+    for i in range(0, 28):
+        if [math.ceil((28 ** 2 - i ** 2) ** 0.5), i] not in lst:
+            lst.append([math.ceil((28 ** 2 - i ** 2) ** 0.5), i]) 
+    
+    distance_from_point = []
+    for i in lst:
+        distance_from_point.append(((i[0] - x)**2 + (i[1] - y)**2)**0.5)
+    closest_point = lst[distance_from_point.index(min(distance_from_point))]
+    
+    if start == True:
+        return (((closest_point[0] - x)**2 + (closest_point[1] - y)**2)**0.5 - r) * 1000 / 2 + r * 1000
+    else:
+        return (((closest_point[0] - x)**2 + (closest_point[1] - y)**2)**0.5 - r) * 1000 / 2 + r * 1000 / 4
 
-        # compute current path weight
-        k = s
-        for j in i:
-            current_pathweight += graph[k][j]
-            k = j
-        current_pathweight += graph[k][s]
+# we need to remove time between end to start, and add duration from shore start plus duration from end to shore
 
-        # update minimum
-        min_path = min(min_path, current_pathweight)
+duration_difference = []
+for k in range(60):
+    start = circles_lst[order[k]]
+    end = circles_lst[order[k - 1]]
+    
+    duration_from_end_to_start = 0
+    for i in circles_pairs_lst:
+        if i.circle1 == order[k - 1] and i.circle2 == order[k]:
+            duration_from_end_to_start = i.time
+            break;
+    
+    duration_difference.append(duration_from_end_to_start - distance_from_shore(start.x, start.y, start.radius, True) - distance_from_shore(end.x, end.y, end.radius, False))
 
-    return min_path
+    
+print(order)
+print(duration - max(duration_difference))
 
 
-s = 0
-print(travellingSalesmanProblem(graph, s))
