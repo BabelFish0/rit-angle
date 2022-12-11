@@ -97,7 +97,7 @@ def time_from_shore(x, y, r, start):
     else:
         return (((closest_point[0] - x)**2 + (closest_point[1] - y)**2)**0.5 - r) * 1000 / 2 + r * 1000 / 4
 
-# we need to remove time between end to start, and add duration from shore start plus duration from end to shore
+# we need to remove time between end to start, and add duration from shore to start plus duration from end to shore
 
 duration_difference = []
 for k in range(60):
