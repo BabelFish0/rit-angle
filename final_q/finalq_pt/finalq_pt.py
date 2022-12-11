@@ -77,7 +77,7 @@ from python_tsp.heuristics import solve_tsp_local_search
 distance_matrix = np.array(graph)
 order, duration = solve_tsp_local_search(distance_matrix)
 # complete path of 60 moutains end at the starting point
-# if starts at order[i], ends at order[i - 1]
+# if starts at order[i], should end at order[i - 1]
 
 def time_from_shore(x, y, r, start):
     lst = []
