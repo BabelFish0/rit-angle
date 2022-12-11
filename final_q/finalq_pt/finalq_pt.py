@@ -27,19 +27,19 @@ for pairs in permutations(circles_lst, 2):  # P as time for A to B is not the sa
     b = pairs[1]  # second circle
     # externally touched: distance = r1 + r2
     if ((a.x - b.x) ** 2 + (a.y - b.y) ** 2) ** 0.5 == a.radius + b.radius:
-        circles_pairs_lst.append(circles_pairs(circles_lst.index(a), circles_lst.index(b), "externally touch", 0))
+        circles_pairs_lst.append(circles_pairs(circles_lst.index(a), circles_lst.index(b), "externally touch", 100000))
     # internally touched: distance = r1 - r2
     elif ((a.x - b.x) ** 2 + (a.y - b.y) ** 2) ** 0.5 == abs(a.radius - b.radius):
-        circles_pairs_lst.append(circles_pairs(circles_lst.index(a), circles_lst.index(b), "internally touch", 0))
+        circles_pairs_lst.append(circles_pairs(circles_lst.index(a), circles_lst.index(b), "internally touch", 100000))
     # not intersecting: distance > r1 + r2
     elif ((a.x - b.x) ** 2 + (a.y - b.y) ** 2) ** 0.5 > a.radius + b.radius:
-        circles_pairs_lst.append(circles_pairs(circles_lst.index(a), circles_lst.index(b), "no intersections", 0))
+        circles_pairs_lst.append(circles_pairs(circles_lst.index(a), circles_lst.index(b), "no intersections", 100000))
     # inside another circle: distance < r1 - r2
     elif ((a.x - b.x) ** 2 + (a.y - b.y) ** 2) ** 0.5 < abs(a.radius - b.radius):
-        circles_pairs_lst.append(circles_pairs(circles_lst.index(a), circles_lst.index(b), "one is inside", 0))
+        circles_pairs_lst.append(circles_pairs(circles_lst.index(a), circles_lst.index(b), "one is inside", 100000))
     # intersects at 2 points:
     else:
-        circles_pairs_lst.append(circles_pairs(circles_lst.index(a), circles_lst.index(b), "2 intersections", 0))
+        circles_pairs_lst.append(circles_pairs(circles_lst.index(a), circles_lst.index(b), "2 intersections", 100000))
 
 # 0 pairs externally touch
 # 0 pairs internally touch
@@ -79,7 +79,7 @@ order, duration = solve_tsp_local_search(distance_matrix)
 # complete path of 60 moutains end at the starting point
 # if starts at order[i], should end at order[i - 1]
 
-def time_from_shore(x, y, r, start):
+def closest(x, y):
     lst = []
     for i in range(0, 28):
         lst.append([i, math.ceil((28**2 - i**2)**0.5)])
@@ -90,7 +90,10 @@ def time_from_shore(x, y, r, start):
     distance_from_point = []
     for i in lst:
         distance_from_point.append(((i[0] - x)**2 + (i[1] - y)**2)**0.5)
-    closest_point = lst[distance_from_point.index(min(distance_from_point))]
+    return lst[distance_from_point.index(min(distance_from_point))]
+
+def time_from_shore(x, y, r, start):
+    closest_point = closest(x, y)
     
     if start == True:
         return (((closest_point[0] - x)**2 + (closest_point[1] - y)**2)**0.5 - r) * 1000 / 2 + r * 1000
@@ -100,6 +103,7 @@ def time_from_shore(x, y, r, start):
 # we need to remove time between end to start, and add duration from shore to start plus duration from end to shore
 
 duration_difference = []
+order_pairs = []
 for k in range(60):
     start = circles_lst[order[k]]
     end = circles_lst[order[k - 1]]
@@ -109,11 +113,20 @@ for k in range(60):
         if i.circle1 == order[k - 1] and i.circle2 == order[k]:
             duration_from_end_to_start = i.time
             break;
-    
+            
+    order_pairs.append([order[k - 1], order[k]])
     duration_difference.append(duration_from_end_to_start - time_from_shore(start.x, start.y, start.radius, True) - time_from_shore(end.x, end.y, end.radius, False))
 
     
-print(order)
-print(duration - max(duration_difference))
+print(duration - max(duration_difference)) 
 
+# coordinates in order
+start_mountain = order_pairs[duration_difference.index(max(duration_difference))][1]
+end_mountain = order_pairs[duration_difference.index(max(duration_difference))][0]
 
+print("start -", closest(circles_lst[start_mountain].x, circles_lst[start_mountain].y))
+for i in range(order.index(start_mountain), len(order)):
+    print(circles_lst[order[i]].x,',',circles_lst[order[i]].y)
+for i in range(0, order.index(start_mountain)):
+    print(circles_lst[order[i]].x,',',circles_lst[order[i]].y)
+print("end -", closest(circles_lst[end_mountain].x, circles_lst[end_mountain].y))
