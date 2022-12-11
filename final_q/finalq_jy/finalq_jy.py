@@ -80,7 +80,7 @@ def dist(m1, m2):
 def time(mountain1, mountain2):
     '''Return time in s FROM mountain1 TO mountain2.'''
     if mountain2 in mountain1.invalid_dest or mountain1 in mountain2.invalid_dest:
-        return infin
+        return 0 #testing CHANGE TO INFIN
     if mountain1 == mountain2:
         return 0
     d = dist(mountain1, mountain2)
@@ -160,8 +160,8 @@ transit_callback_index = routing.RegisterTransitCallback(distance_callback)
 routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
 search_parameters = pywrapcp.DefaultRoutingSearchParameters()
 search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.GLOBAL_CHEAPEST_ARC)
-search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.SIMULATED_ANNEALING)
-search_parameters.time_limit.seconds = 60*60*8
+search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
+search_parameters.time_limit.seconds = 60
 #search_parameters.log_search = True
 
 def print_solution(manager, routing, solution):
